@@ -4,6 +4,7 @@ import { createOrbitDB, IPFSBlockStorage } from '@orbitdb/core'
 import { Libp2pOptions } from './libp2p.js'
 import { FsBlockstore } from 'blockstore-fs'
 import bootstrapConfig from './bootstrap.json' with { type: "json" }
+import express from 'express';
 
 const main = async () => {
   // create a random directory to avoid OrbitDB conflicts.
@@ -46,6 +47,25 @@ const main = async () => {
 
     process.exit()
   })
+
+  // set up express app
+  const app = express();
+
+  app.get('/listings', async (req, res) => {
+    try {
+      const serviceListings = await serviceAdsDB.all();
+      res.json(serviceListings);
+    } catch (error) {
+      res.status(500).send('Error fetching service listings');
+    }
+  });
+
+  const HOST = process.env.HOST || '127.0.0.1';
+  const PORT = process.env.PORT || 3000;
+
+  app.listen(PORT, HOST, () => {
+    console.log(`Server running on http://${HOST}:${PORT}`);
+  });
 }
 
 main()
